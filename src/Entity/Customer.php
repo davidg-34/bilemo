@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\CustomerRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use App\Repository\CustomerRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -16,6 +17,7 @@ class Customer implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getCustomers", "getUsers"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
@@ -25,15 +27,18 @@ class Customer implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(["getCustomers", "getUsers"])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(["getCustomers", "getUsers"])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getCustomers", "getUsers"])]
     private ?string $name = null;
 
     /**

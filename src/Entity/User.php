@@ -4,7 +4,8 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-use Symfony\Component\Serializer\Annotation\Groups;
+//use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -15,11 +16,11 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getCustomers"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getCustomers"])]
     #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     #[Assert\Length(
         min: 3,
@@ -30,7 +31,7 @@ class User
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getCustomers"])]
     #[Assert\NotBlank(message: "Le nom est obligatoire")]
     #[Assert\Length(
         min: 3,
@@ -41,12 +42,13 @@ class User
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getCustomers"])]
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas un email valide.")]
     private ?string $email = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
+    #[Groups(["getUsers", "getCustomers"])]
     private ?Customer $customer = null;
 
     public function getId(): ?int
