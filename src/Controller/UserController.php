@@ -21,6 +21,7 @@ use Symfony\Component\Validator\Constraints\Url;
 
 class UserController extends AbstractController
 {
+    // Liste des users
     #[Route('api/users', name: 'app_user', methods: ['GET'])]
     public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
@@ -29,49 +30,16 @@ class UserController extends AbstractController
         return new JsonResponse( $jsonUserList, Response::HTTP_OK, [], true);
     }
 
+    // Détail d'un user
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
     {
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUser, Response::HTTP_OK, ['accept' => 'json'], true);
     }
-    
-    #[Route('/api/users/{id}', name: 'deleteUser')]
-    public function getDeleteUser(User $user, EntityManagerInterface $em): JsonResponse
-    {
-        $em->remove($user);
-        $em->flush();
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
-    }
 
-    #[Route('/api/users', name: 'createUser')]
-    public function CreateUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, CustomerRepository $customerRepository): JsonResponse
-    {
-        $user = $serializer->deserialize($request->getContent(), User::class, 'json');
-
-        // Récupération de l'ensemble des données envoyées sous forme de tableau
-        $content = $request->toArray();
-
-        // Récupération de l'idCustomer. S'il n'est pas défini, alors on met -1 par défaut.
-        $idCustomer = $content['idCustomer'] ?? -1;
-
-        // On cherche le customer qui correspond et on l'assigne au user.
-        // Si "find" ne trouve pas le customer, alors null sera retourné.
-        $user->setCustomer($customerRepository->find($idCustomer));
-
-        $em->persist($user);
-        $em->flush();
-
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
-
-        $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
-    }
-
-
-
-   /* #[Route('/api/users', name:"createUser", methods: ['POST'])]
+    // Création d'un user
+   #[Route('/api/users', name:"createUser", methods: ['POST'])]
     public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, CustomerRepository $customerRepository, ValidatorInterface $validator): JsonResponse 
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -102,12 +70,14 @@ class UserController extends AbstractController
 
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
     }
-
-    public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
+   
+    // Suppression d'un user
+    #[Route('/api/users/{id}', name: 'deleteUser')]
+    public function getDeleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($user);
         $em->flush();
-        
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
-    } */
+    }
+
 }
