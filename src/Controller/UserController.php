@@ -6,12 +6,14 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -24,14 +26,22 @@ class UserController extends AbstractController
 {
     // Liste des users
     #[Route('api/users', name: 'app_user', methods: ['GET'])]
-    public function getUserList(UserRepository $userRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    public function getUserList(UserRepository $userRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
-        $userList = $userRepository->findAllWithPagination($page, $limit);
 
-        $jsonUserList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
-        return new JsonResponse( $jsonUserList, Response::HTTP_OK, [], true);
+        $idCache = "getUserList-" . $page . "-" . $limit;
+
+        $jsonUserList = $cache->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $serializer) {
+        echo ("L'élément n'est pas en cache ! \n");
+        $item->tag("usersCache");
+        $userList = $userRepository->findAllWithPagination($page, $limit);
+        // On s'assure que le résultat est bien une chaîne JSON
+        return $serializer->serialize($userList, 'json', ['groups' => 'getUsers', 'getCustomers']);
+        });
+
+        return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
     // Détail d'un user
@@ -77,10 +87,11 @@ class UserController extends AbstractController
     }
    
     // Suppression d'un user
-    #[Route('/api/users/{id}', name: 'deleteUser')]
+    #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour supprimer un utilisateur')]
-    public function getDeleteUser(User $user, EntityManagerInterface $em): JsonResponse
+    public function DeleteUser(User $user, EntityManagerInterface $em, TagAwareCacheInterface $cachePool): JsonResponse
     {
+        $cachePool->invalidateTags(["usersCache"]);
         $em->remove($user);
         $em->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);

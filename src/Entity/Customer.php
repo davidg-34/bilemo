@@ -20,7 +20,12 @@ class Customer implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(["getCustomers", "getUsers"])]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255)]
+    #[Groups(["getCustomers", "getUsers"])]
+    private ?string $name = null;
+
     #[ORM\Column(length: 180)]
+    #[Groups(["getCustomers", "getUsers"])]
     private ?string $email = null;
 
     /**
@@ -36,10 +41,6 @@ class Customer implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     #[Groups(["getCustomers", "getUsers"])]
     private ?string $password = null;
-
-    #[ORM\Column(length: 255)]
-    #[Groups(["getCustomers", "getUsers"])]
-    private ?string $name = null;
 
     /**
      * @var Collection<int, User>
