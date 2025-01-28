@@ -6,18 +6,19 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use phpDocumentor\Reflection\DocBlock\Tags\Reference\Url as ReferenceUrl;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Validator\Constraints\Url;
+use phpDocumentor\Reflection\DocBlock\Tags\Reference\Url as ReferenceUrl;
 
 class UserController extends AbstractController
 {
@@ -40,6 +41,7 @@ class UserController extends AbstractController
 
     // Création d'un user
    #[Route('/api/users', name:"createUser", methods: ['POST'])]
+   #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un utilisateur')]
     public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, CustomerRepository $customerRepository, ValidatorInterface $validator): JsonResponse 
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -73,6 +75,7 @@ class UserController extends AbstractController
    
     // Suppression d'un user
     #[Route('/api/users/{id}', name: 'deleteUser')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour supprimer un utilisateur')]
     public function getDeleteUser(User $user, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($user);
