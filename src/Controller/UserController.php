@@ -5,16 +5,18 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
+use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Url;
+//use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -25,7 +27,7 @@ use phpDocumentor\Reflection\DocBlock\Tags\Reference\Url as ReferenceUrl;
 class UserController extends AbstractController
 {
     // Liste des users
-    #[Route('api/users', name: 'app_user', methods: ['GET'])]
+    #[Route('api/users', name: 'users', methods: ['GET'])]
     public function getUserList(UserRepository $userRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
     {
         $page = $request->get('page', 1);
@@ -37,8 +39,9 @@ class UserController extends AbstractController
         echo ("L'élément n'est pas en cache ! \n");
         $item->tag("usersCache");
         $userList = $userRepository->findAllWithPagination($page, $limit);
-        // On s'assure que le résultat est bien une chaîne JSON
-        return $serializer->serialize($userList, 'json', ['groups' => 'getUsers', 'getCustomers']);
+
+        $context = SerializationContext::create()->setGroups(['getUsers', 'getCustomers']);
+        return $serializer->serialize($userList, 'json', $context);
         });
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
@@ -48,8 +51,9 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
     {
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
-        return new JsonResponse($jsonUser, Response::HTTP_OK, ['accept' => 'json'], true);
+        $context = SerializationContext::create()->setGroups(['getUsers', 'getCustomers']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
+        return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
     // Création d'un user
@@ -79,7 +83,8 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
 
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 

@@ -4,10 +4,41 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-//use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Attribute\Groups;
+//use Symfony\Component\Serializer\Attribute\Groups;
+use JMS\Serializer\Annotation\Groups;
+use Hateoas\Configuration\Annotation as Hateoas;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href = @Hateoas\Route(
+ *          "detailUser",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups={"getUsers"})
+ * )
+ * 
+ * * @Hateoas\Relation(
+ *      "userlist",
+ *      href = @Hateoas\Route(
+ *          "users"
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups={"getUsers"})
+ * )
+ * 
+ * * @Hateoas\Relation(
+ *      "delete",
+ *      href = @Hateoas\Route(
+ *          "deleteUser",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups={"getUsers"}, excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),
+ * )
+ *
+ *
+ */
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Il y a déjà un compte avec cette adresse E-mail')]
