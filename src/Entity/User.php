@@ -53,23 +53,14 @@ class User
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers", "getCustomers"])]
     #[Assert\NotBlank(message: "Le prénom est obligatoire")]
-    #[Assert\Length(
-        min: 3,
-        max: 255,
-        minMessage: 'Le prénom doit comporter au moins {{ limit }} caractères',
-        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères'
-        )]
+    #[Assert\Length(min: 1, max: 255, minMessage: "Le nom doit faire au moins {{ limit }} caractères", maxMessage: "Le nom ne peut pas faire plus de {{ limit }} caractères")]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers", "getCustomers"])]
     #[Assert\NotBlank(message: "Le nom est obligatoire")]
-    #[Assert\Length(
-        min: 3,
-        max: 255,
-        minMessage: 'Le nom doit comporter au moins {{ limit }} caractères',
-        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
-        )]
+    #[Assert\Length(min: 1, max: 255, minMessage: "Le prénom doit faire au moins {{ limit }} caractères", maxMessage: "Le prénom ne peut pas faire plus de {{ limit }} caractères")]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255)]
@@ -128,7 +119,7 @@ class User
         return $this->customer;
     }
 
-    public function setCustomer(?Customer $customer): static
+    public function setCustomer(?Customer $customer): self
     {
         $this->customer = $customer;
 
