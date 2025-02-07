@@ -7,6 +7,7 @@ use OpenApi\Attributes as OA;
 use App\Repository\PhoneRepository;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use Nelmio\ApiDocBundle\Attribute\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,12 +40,15 @@ class PhoneController extends AbstractController
     )]
     #[OA\Tag(name: 'Phones')]
     #[Security(name: 'Bearer')]
-    public function getPhoneList(PhoneRepository $phoneRepository, SerializerInterface $serializer): JsonResponse
+    public function getPhoneList(PhoneRepository $phoneRepository, SerializerInterface $serializer, Request $request): JsonResponse
     {
-        $phoneList = $phoneRepository->findAll();
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
+
+        $phoneList = $phoneRepository->findAllWithPagination($page, $limit);
+        
         $jsonPhoneList = $serializer->serialize($phoneList, 'json');
-        return new JsonResponse(
-            $jsonPhoneList, Response::HTTP_OK, [], true);
+        return new JsonResponse($jsonPhoneList, Response::HTTP_OK, [], true);
     }
 
     // Détail d'un téléphone
