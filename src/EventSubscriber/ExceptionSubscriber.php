@@ -17,7 +17,8 @@ class ExceptionSubscriber implements EventSubscriberInterface
         if ($exception instanceof HttpException) {
             $data = [
                 'status' => $exception->getStatusCode(),
-                'message' => $exception->getMessage()
+                //'message' => $exception->getMessage()
+                'message' => 'La ressource demandée n\'existe pas !'
             ];
 
             $event->setResponse(new JsonResponse($data));

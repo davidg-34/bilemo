@@ -26,21 +26,18 @@ class Customer implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $name = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(["getCustomers", "getUsers"])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(["getCustomers", "getUsers"])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Groups(["getCustomers", "getUsers"])]
     private ?string $password = null;
 
     /**
